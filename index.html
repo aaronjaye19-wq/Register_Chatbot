@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI-powered assistant for school registrar services and requirements">
+    <title>Registrar AI Assistant</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="chat-header">
+            <div class="header-content">
+                <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <h1>Registrar AI Assistant</h1>
+            </div>
+            <p class="header-subtitle">Your guide to registrar services and requirements</p>
+        </header>
+
+        <div class="chat-container" id="chatContainer">
+            <div class="welcome-message">
+                <div class="welcome-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M12 16v-4M12 8h.01"></path>
+                    </svg>
+                </div>
+                <h2>Welcome to Registrar AI Assistant</h2>
+                <p>Ask me anything about enrollment, documents, requirements, and registrar services!</p>
+                <div class="sample-questions">
+                    <p class="sample-title">Try asking:</p>
+                    <button class="sample-btn" onclick="askSample('What are the enrollment requirements?')">What are the enrollment requirements?</button>
+                    <button class="sample-btn" onclick="askSample('How long does TOR processing take?')">How long does TOR processing take?</button>
+                    <button class="sample-btn" onclick="askSample('What are the office hours?')">What are the office hours?</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-container">
+            <div class="input-wrapper">
+                <input
+                    type="text"
+                    id="userInput"
+                    placeholder="Ask something about registrar services..."
+                    autocomplete="off"
+                >
+                <button id="sendBtn" onclick="sendMessage()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </div>
+            <p class="input-hint">Press Enter to send</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
