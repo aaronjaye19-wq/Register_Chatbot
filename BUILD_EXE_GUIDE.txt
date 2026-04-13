@@ -43,106 +43,65 @@ STEP 1: PREPARE YOUR ENVIRONMENT
    - numpy==1.24.3
 
 ================================================================================
-STEP 2: CREATE PYINSTALLER CONFIGURATION FILE
+STEP 2: SPEC FILE IS ALREADY PROVIDED
 ================================================================================
 
-Create a file named "build_config.spec" in your project root with this content:
+IMPORTANT: We've included a complete spec file: RegistrarChatbot.spec
 
----START OF build_config.spec---
+This file contains ALL necessary hidden imports for scikit-learn and scipy.
 
-# -*- mode: python ; coding: utf-8 -*-
+The spec file was created to fix the error:
+  ModuleNotFoundError: No module named 'scipy._lib.array_api_compat.numpy.fft'
 
-block_cipher = None
-
-a = Analysis(
-    ['app.py'],
-    pathex=[],
-    binaries=[],
-    datas=[
-        ('index.html', '.'),
-        ('style.css', '.'),
-        ('script.js', '.'),
-        ('*.py', '.'),
-    ],
-    hiddenimports=['sklearn.utils._cython_blas', 'sklearn.utils._typedefs'],
-    hookspath=[],
-    hooksconfig={},
-    runtime_hooks=[],
-    excludedimports=[],
-    win_no_prefer_redirects=False,
-    win_private_assemblies=False,
-    cipher=block_cipher,
-    noarchive=False,
-)
-
-pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
-
-exe = EXE(
-    pyz,
-    a.scripts,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
-    [],
-    name='RegistrarChatbot',
-    debug=False,
-    bootloader_ignore_signals=False,
-    strip=False,
-    upx=True,
-    upx_exclude=[],
-    runtime_tmpdir=None,
-    console=True,
-    disable_windowed_traceback=False,
-    argv_emulation=False,
-    target_arch=None,
-    codesign_identity=None,
-    entitlements_file=None,
-)
-
----END OF build_config.spec---
+DO NOT modify the spec file unless you know what you're doing.
+The included RegistrarChatbot.spec already has all required imports configured.
 
 ================================================================================
 STEP 3: BUILD THE EXECUTABLE
 ================================================================================
 
-Option A: SIMPLE BUILD (Recommended for first-time)
-------------------------------------------------------
+OPTION A: AUTOMATIC BUILD (Easiest - Recommended)
+==================================================
 
-Run this command in Command Prompt (from project root):
+Simply run the included build script from Command Prompt:
 
-  > pyinstaller --onefile --windowed --name RegistrarChatbot app.py
+  > build_exe.bat
 
-This creates:
-  - Single .exe file
-  - No console window
-  - Smaller file size
+This will:
+  1. Verify all dependencies are installed
+  2. Clean previous builds
+  3. Build the EXE using the correct spec file with all dependencies
+  4. Verify the build was successful
+  5. Show you where the .exe file is located
 
+OPTION B: MANUAL BUILD (Using provided spec file)
+==================================================
 
-Option B: ADVANCED BUILD (Using config file)
-------------------------------------------------------
+Run this command from your project root:
 
-Run this command:
+  > pyinstaller RegistrarChatbot.spec
 
-  > pyinstaller build_config.spec
-
-This uses your custom configuration for more control.
-
-
-Option C: ONE-FOLDER BUILD (For debugging)
-------------------------------------------------------
-
-Run this command:
-
-  > pyinstaller --onedir --windowed --name RegistrarChatbot app.py
-
-This creates:
-  - exe with supporting files in folder
-  - Easier to debug if issues occur
+This:
+  - Uses the pre-configured spec file with all hidden imports
+  - Includes all scipy, sklearn, and numpy modules
+  - Fixes the ModuleNotFoundError issue
+  - Creates a proper standalone executable
 
 
-RECOMMENDED COMMAND:
+OPTION C: ALTERNATIVE COMMAND (If spec file doesn't work)
+==================================================
 
-  > pyinstaller --onefile --windowed --hidden-import=sklearn --hidden-import=numpy --name RegistrarChatbot --icon=app.ico app.py
+If you encounter issues, try:
+
+  > pyinstaller --onefile --console --hidden-import=sklearn --hidden-import=scipy --hidden-import=numpy --hidden-import=flask --hidden-import=flask_cors --name RegistrarChatbot app.py
+
+Note: This may create larger file but includes all necessary modules.
+
+
+RECOMMENDED APPROACH:
+
+Use Option A (build_exe.bat) for easiest results.
+All dependencies and hidden imports are already configured.
 
 ================================================================================
 STEP 4: LOCATE YOUR EXECUTABLE
@@ -195,42 +154,82 @@ To add a custom icon to your .exe:
 TROUBLESHOOTING COMMON ISSUES
 ================================================================================
 
-Issue 1: "ModuleNotFoundError: No module named 'sklearn'"
-Solution:
-  - Make sure virtual environment is activated
-  - Run: pip install scikit-learn numpy
-  - Rebuild the executable
+Issue 1: "ModuleNotFoundError: No module named 'scipy._lib.array_api_compat...'"
+Solution (MOST COMMON):
+  1. Delete dist\ and build\ folders: rmdir /s /q dist build
+  2. Rebuild using the spec file:
+     > pyinstaller RegistrarChatbot.spec
+  3. Or use the automated build script:
+     > build_exe.bat
+  4. The spec file includes all necessary hidden imports
 
-Issue 2: "Flask app doesn't start"
+Issue 2: "ModuleNotFoundError: No module named 'sklearn'"
 Solution:
-  - Check if port 5000 is available
-  - Edit app.py, change port in app.run(port=5000) to another port
-  - Rebuild the executable
+  1. Verify dependencies: pip show scikit-learn
+  2. If missing, install: pip install scikit-learn==1.3.2
+  3. Install all requirements: pip install -r requirements.txt
+  4. Rebuild using spec file: pyinstaller RegistrarChatbot.spec
 
-Issue 3: ".exe crashes immediately"
+Issue 3: ".exe crashes when I click it"
 Solution:
-  - Build with console window to see error:
-    pyinstaller --onefile --console --name RegistrarChatbot app.py
-  - Check output for error messages
-  - Add hidden imports: --hidden-import=sklearn --hidden-import=numpy
+  1. Build with console to see error:
+     > pyinstaller --onefile --console --name RegistrarChatbot app.py
+  2. Or use build script which shows console output:
+     > build_exe.bat
+  3. Look at error message in console window
+  4. Check if it's the scipy/sklearn issue (Issue 1 above)
 
-Issue 4: "Large .exe file size (500+ MB)"
+Issue 4: "Flask app doesn't start / port already in use"
 Solution:
-  - This is normal with scikit-learn and numpy included
-  - Use --onedir instead of --onefile to reduce .exe size
-  - Delete dist\ folder and rebuild
+  1. Check if port 5000 is available
+  2. Change port in app.py:
+     - Find: app.run(host='127.0.0.1', port=5000, debug=True)
+     - Change to: app.run(host='127.0.0.1', port=5001, debug=True)
+  3. Also update script.js:
+     - Find: const API_URL = 'http://localhost:5000';
+     - Change to: const API_URL = 'http://localhost:5001';
+  4. Rebuild executable
 
-Issue 5: "Port 5000 already in use"
-Solution in app.py:
-  - Find: app.run(host='127.0.0.1', port=5000, debug=True)
-  - Change to: app.run(host='127.0.0.1', port=5001, debug=True)
-  - Also update script.js: const API_URL = 'http://localhost:5001';
-  - Rebuild executable
-
-Issue 6: "Browser doesn't open automatically"
+Issue 5: "Large .exe file size (500-800 MB)"
 Solution:
-  - Manually open: http://localhost:5000 in your browser
-  - .exe is running in background (check console)
+  This is NORMAL with scikit-learn included. Alternatives:
+  
+  Option A: Use --onedir to separate binary and supporting files
+    > pyinstaller --onedir --console RegistrarChatbot.spec
+  
+  Option B: Use alternative simpler ML library (replace scikit-learn)
+  
+  Option C: Accept the large size (no real impact on functionality)
+
+Issue 6: "PyInstaller not found"
+Solution:
+  1. Install PyInstaller: pip install PyInstaller==6.1.0
+  2. Or install all at once: pip install -r requirements.txt
+  3. Then rebuild
+
+Issue 7: "Browser doesn't open automatically"
+Solution:
+  1. The chatbot should open automatically at http://localhost:5000
+  2. If not, manually open: http://localhost:5000 in your browser
+  3. The .exe console window shows if Flask is running
+  4. If "Running on http://127.0.0.1:5000" appears, it's working
+
+Issue 8: "Permission denied when running .exe"
+Solution:
+  1. Right-click the .exe file
+  2. Select "Properties"
+  3. Uncheck "Read-only" if checked
+  4. Click "Apply" and "OK"
+  5. Try running again
+
+Issue 9: "build_exe.bat doesn't work"
+Solution:
+  1. Open Command Prompt
+  2. Navigate to project folder: cd C:\path\to\Register_Chatbot
+  3. Verify you're in the right folder (should see build_exe.bat)
+  4. Run: build_exe.bat
+  5. If not working, try manual build:
+     > pyinstaller RegistrarChatbot.spec
 
 ================================================================================
 DISTRIBUTION & SHARING
@@ -308,6 +307,14 @@ Before sharing your .exe:
 QUICK REFERENCE COMMANDS
 ================================================================================
 
+EASIEST METHOD (Recommended):
+  > build_exe.bat
+
+This script handles everything automatically!
+
+
+MANUAL METHODS:
+
 Virtual Environment:
   > python -m venv venv           (create)
   > venv\Scripts\activate          (activate)
@@ -316,15 +323,21 @@ Virtual Environment:
 Install Dependencies:
   > pip install -r requirements.txt
 
-Build Executable:
-  > pyinstaller --onefile --windowed --name RegistrarChatbot app.py
+Build Executable (using spec file):
+  > pyinstaller RegistrarChatbot.spec
+
+Build Executable (alternative):
+  > pyinstaller --onefile --console --hidden-import=sklearn --hidden-import=scipy --hidden-import=numpy --name RegistrarChatbot app.py
 
 Clean Build Files:
-  > rmdir /s build dist
-  > del RegistrarChatbot.spec
+  > rmdir /s /q dist
+  > rmdir /s /q build
 
 Run Executable:
   > dist\RegistrarChatbot.exe
+
+View Dist Folder:
+  > start dist
 
 ================================================================================
 VERSION HISTORY

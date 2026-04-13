@@ -1,0 +1,150 @@
+================================================================================
+IMMEDIATE FIX FOR YOUR EXE ERROR
+================================================================================
+
+You got this error when clicking RegistrarChatbot.exe:
+
+  ModuleNotFoundError: No module named 'scipy._lib.array_api_compat.numpy.fft'
+
+QUICK FIX (Just 3 steps):
+================================================================================
+
+STEP 1: Delete old builds
+  Open Command Prompt and type:
+  
+  > rmdir /s /q dist
+  > rmdir /s /q build
+
+  (Just press Y if it asks to confirm)
+
+
+STEP 2: Run the build script we created
+  
+  In the same Command Prompt, type:
+  
+  > build_exe.bat
+
+  Then wait 2-5 minutes while it builds. You'll see lots of text - that's normal!
+
+
+STEP 3: Test the new .exe
+  
+  When it finishes, find and double-click:
+  
+  dist\RegistrarChatbot.exe
+
+  A console window will appear, then your browser should open.
+  It should work now!
+
+
+IF build_exe.bat DOESN'T WORK:
+================================================================================
+
+Try the manual rebuild:
+
+  > pyinstaller RegistrarChatbot.spec
+
+Then run:
+
+  > dist\RegistrarChatbot.exe
+
+
+STILL NOT WORKING?
+================================================================================
+
+Follow these diagnostic steps:
+
+1. Verify Python works:
+   > python --version
+   
+   (Should show Python 3.8 or higher)
+
+2. Verify PyInstaller is installed:
+   > pip show pyinstaller
+   
+   (Should show PyInstaller version info)
+
+3. Verify dependencies are installed:
+   > pip install -r requirements.txt
+   
+   (This installs/fixes all needed packages)
+
+4. Try building again:
+   > rmdir /s /q dist build
+   > pyinstaller RegistrarChatbot.spec
+
+5. Test:
+   > dist\RegistrarChatbot.exe
+
+
+WHAT WENT WRONG?
+================================================================================
+
+The original build didn't include all the hidden dependencies that scikit-learn
+needs. The spec file (RegistrarChatbot.spec) tells PyInstaller exactly which
+modules to include.
+
+We've now provided:
+  - RegistrarChatbot.spec (pre-configured spec file)
+  - build_exe.bat (automated build script)
+  - FIX_SCIPY_ERROR.txt (detailed explanation)
+
+These fix the issue.
+
+
+DETAILED GUIDES AVAILABLE:
+================================================================================
+
+For more information, see:
+
+  FIX_SCIPY_ERROR.txt
+    - Detailed explanation of the problem
+    - Multiple solutions
+    - Troubleshooting tips
+
+  BUILD_EXE_GUIDE.txt
+    - Complete comprehensive guide
+    - All build options explained
+    - Port configuration, icons, etc.
+
+  START_HERE.md
+    - Quick start for using the chatbot
+    - Feature overview
+
+
+REMEMBER:
+================================================================================
+
+Always use one of these methods to rebuild:
+
+  METHOD 1 (Easiest):
+    > build_exe.bat
+
+  METHOD 2 (Manual):
+    > pyinstaller RegistrarChatbot.spec
+
+  METHOD 3 (Alternative):
+    > pyinstaller --onefile --console --hidden-import=sklearn --hidden-import=scipy app.py
+
+Don't use simple commands like "pyinstaller app.py" without the spec file -
+they won't include the hidden dependencies.
+
+
+NEED HELP?
+================================================================================
+
+If none of this works:
+
+1. Check that you're in the correct folder (where RegistrarChatbot.spec is)
+2. Check the error message closely - it might be different
+3. See FIX_SCIPY_ERROR.txt for additional troubleshooting
+4. See BUILD_EXE_GUIDE.txt for comprehensive help
+
+Questions?
+  - Check the documentation files listed above
+  - All files are in your project root folder
+  - Start with START_HERE.md if you're new
+
+================================================================================
+Next Step: Follow the 3-step fix above!
+================================================================================
