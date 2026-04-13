@@ -4,6 +4,9 @@ const chatContainer = document.getElementById('chatContainer');
 const userInput = document.getElementById('userInput');
 const sendBtn = document.getElementById('sendBtn');
 
+// Store message history for edit functionality
+const messageHistory = [];
+
 userInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
         sendMessage();
@@ -13,6 +16,36 @@ userInput.addEventListener('keypress', (e) => {
 function askSample(question) {
     userInput.value = question;
     sendMessage();
+}
+
+function editMessage(index) {
+    const userMessage = messageHistory[index];
+    if (userMessage) {
+        userInput.value = userMessage.text;
+        userInput.focus();
+        
+        // Remove the old message and bot response
+        const messages = document.querySelectorAll('.message');
+        let userCount = 0;
+        
+        messages.forEach((msg, idx) => {
+            if (msg.classList.contains('user')) {
+                userCount++;
+                if (userCount === index + 1) {
+                    // Remove this user message
+                    msg.remove();
+                    // Remove following bot response if exists
+                    const nextMsg = messages[idx + 1];
+                    if (nextMsg && nextMsg.classList.contains('bot')) {
+                        nextMsg.remove();
+                    }
+                }
+            }
+        });
+        
+        // Remove from history
+        messageHistory.splice(index, 1);
+    }
 }
 
 async function sendMessage() {
@@ -25,7 +58,9 @@ async function sendMessage() {
         welcomeMessage.remove();
     }
 
-    addMessage(message, 'user');
+    const isEdited = messageHistory.some(msg => msg.text === message);
+    addMessage(message, 'user', isEdited);
+    messageHistory.push({ text: message, edited: isEdited });
     userInput.value = '';
 
     showTypingIndicator();
@@ -36,7 +71,7 @@ async function sendMessage() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ message: message })
+            body: JSON.stringify({ message: message, is_edited: isEdited })
         });
 
         const data = await response.json();
@@ -55,7 +90,7 @@ async function sendMessage() {
     }
 }
 
-function addMessage(text, sender) {
+function addMessage(text, sender, isEdited = false) {
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${sender}`;
 
@@ -64,6 +99,34 @@ function addMessage(text, sender) {
     contentDiv.textContent = text;
 
     messageDiv.appendChild(contentDiv);
+
+    // Add edit button for user messages
+    if (sender === 'user') {
+        const actionDiv = document.createElement('div');
+        actionDiv.className = 'message-actions';
+        
+        const editBtn = document.createElement('button');
+        editBtn.className = 'edit-btn';
+        editBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            Edit
+        `;
+        editBtn.onclick = () => editMessage(messageHistory.length - 1);
+        
+        if (isEdited) {
+            const editedLabel = document.createElement('span');
+            editedLabel.className = 'edited-label';
+            editedLabel.textContent = 'edited';
+            actionDiv.appendChild(editedLabel);
+        }
+        
+        actionDiv.appendChild(editBtn);
+        messageDiv.appendChild(actionDiv);
+    }
+
     chatContainer.appendChild(messageDiv);
 
     chatContainer.scrollTop = chatContainer.scrollHeight;

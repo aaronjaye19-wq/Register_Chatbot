@@ -38,6 +38,7 @@ def chat():
     try:
         data = request.get_json()
         user_message = data.get('message', '')
+        is_edited = data.get('is_edited', False)
 
         if not user_message:
             return jsonify({
@@ -47,7 +48,8 @@ def chat():
         response = chatbot_instance.get_response(user_message)
 
         return jsonify({
-            'response': response
+            'response': response,
+            'is_edited': is_edited
         }), 200
 
     except Exception as e:

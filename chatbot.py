@@ -1,14 +1,21 @@
 """
-RegistrarChatbot Class - Demonstrates COMPOSITION and DEPENDENCY INJECTION
+RegistrarChatbot Class - Demonstrates COMPOSITION and DEPENDENCY INJECTION with ML AI
 
 OOP Principles Applied:
 1. COMPOSITION - Uses FAQItem objects to build functionality
 2. SINGLE RESPONSIBILITY - Manages chatbot logic and FAQ matching
 3. DEPENDENCY INJECTION - FAQ data can be injected from external sources
 4. ENCAPSULATION - Internal logic is hidden from external use
+
+Machine Learning Features:
+1. TF-IDF Vectorization for semantic understanding
+2. Cosine similarity for better query matching
 """
 
 from faq_item import FAQItem
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
 
 class RegistrarChatbot:
     """
@@ -22,22 +29,27 @@ class RegistrarChatbot:
     def __init__(self):
         """
         Constructor - OOP PRINCIPLE: ENCAPSULATION
-        Initializes the chatbot with empty FAQ database
+        Initializes the chatbot with empty FAQ database and ML models
         """
         self._faq_database = []
         self._default_response = "I'm sorry, I don't have information about that. Please contact the registrar office directly at 8:00 AM - 5:00 PM for assistance."
         self._greetings = ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening', 'greetings', 'howdy', 'what\'s up', 'whats up', 'yo', 'sup']
+        
+        # ML Components
+        self._vectorizer = TfidfVectorizer(lowercase=True, stop_words='english')
+        self._faq_vectors = None
+        self._ml_enabled = False
 
     def load_faq_data(self):
         """
-        Load FAQ data into the chatbot
+        Load FAQ data into the chatbot and train ML models
 
         OOP PRINCIPLE: COMPOSITION
         - Creates and manages FAQItem objects
         - Demonstrates object composition
 
         OOP PRINCIPLE: SINGLE RESPONSIBILITY
-        - This method's only job is to load FAQ data
+        - This method's only job is to load FAQ data and train ML
         """
         faq_data = [
             {
@@ -99,6 +111,9 @@ class RegistrarChatbot:
                 keywords=faq["keywords"]
             )
             self._faq_database.append(faq_item)
+        
+        # Train ML model with FAQ questions
+        self._train_ml_model()
 
     def is_greeting(self, user_input):
         """
@@ -133,17 +148,65 @@ class RegistrarChatbot:
             faq_list += f"{idx}. {faq_item.get_question()}\n"
         return faq_list
 
+    def _train_ml_model(self):
+        """
+        Train ML model with FAQ questions using TF-IDF vectorization
+
+        ML PRINCIPLE: FEATURE EXTRACTION
+        - Uses TF-IDF to convert text into numerical vectors
+        - Creates semantic understanding of FAQ content
+        """
+        try:
+            questions = [faq.get_question() for faq in self._faq_database]
+            self._faq_vectors = self._vectorizer.fit_transform(questions)
+            self._ml_enabled = True
+        except Exception as e:
+            print(f"ML training error: {e}. Falling back to keyword matching.")
+            self._ml_enabled = False
+
+    def _find_best_match_ml(self, user_query):
+        """
+        Find best match using ML (TF-IDF + Cosine Similarity)
+
+        ML PRINCIPLE: SEMANTIC SIMILARITY
+        - Computes cosine similarity between user query and FAQ questions
+        - Returns match with highest similarity score
+
+        Args:
+            user_query (str): User's input query
+
+        Returns:
+            tuple: (best_match_faq, confidence_score)
+        """
+        if not self._ml_enabled or self._faq_vectors is None:
+            return None, 0.0
+
+        try:
+            query_vector = self._vectorizer.transform([user_query])
+            similarities = cosine_similarity(query_vector, self._faq_vectors)[0]
+            best_idx = np.argmax(similarities)
+            confidence = similarities[best_idx]
+
+            # Only return if confidence exceeds threshold
+            if confidence > 0.2:
+                return self._faq_database[best_idx], float(confidence)
+        except Exception as e:
+            print(f"ML matching error: {e}")
+
+        return None, 0.0
+
     def find_best_match(self, user_query):
         """
-        Find the best matching FAQ for user's query
+        Find the best matching FAQ using hybrid approach (ML + Keyword)
 
         OOP PRINCIPLE: ABSTRACTION
         - Hides complex matching algorithm
         - Provides simple interface for finding matches
 
-        OOP PRINCIPLE: ENCAPSULATION
-        - Uses private _faq_database
-        - Internal logic is hidden
+        HYBRID ML APPROACH:
+        1. First tries ML-based semantic matching (TF-IDF)
+        2. Falls back to keyword matching for robustness
+        3. Combines both methods for best results
 
         Args:
             user_query (str): User's input query
@@ -151,17 +214,29 @@ class RegistrarChatbot:
         Returns:
             FAQItem or None: Best matching FAQ item or None if no match
         """
-        best_match = None
-        highest_score = 0
+        # Try ML-based matching first
+        ml_match, ml_confidence = self._find_best_match_ml(user_query)
+        
+        # Keyword matching as fallback/verification
+        keyword_match = None
+        highest_keyword_score = 0
 
         for faq_item in self._faq_database:
             match_score = faq_item.matches_query(user_query)
 
-            if match_score > highest_score:
-                highest_score = match_score
-                best_match = faq_item
+            if match_score > highest_keyword_score:
+                highest_keyword_score = match_score
+                keyword_match = faq_item
 
-        return best_match if highest_score > 0 else None
+        # Hybrid decision: Prefer ML if confidence is good, else use keywords
+        if ml_match and ml_confidence > 0.3:
+            return ml_match
+        elif keyword_match and highest_keyword_score > 0:
+            return keyword_match
+        elif ml_match and ml_confidence > 0.2:
+            return ml_match
+        
+        return None
 
     def process_input(self, user_input):
         """
